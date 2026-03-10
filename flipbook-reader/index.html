@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlipBook Reader – Heyzine Style</title>
+
+  <!-- Google Fonts - Heyzine uses simple, clean sans-serif -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+
+  <!-- ===== UPLOAD ZONE (Heyzine style floating box) ===== -->
+  <section class="upload-section" id="uploadSection">
+    <div class="upload-container">
+      <h1>Free PDF to Flipbook Converter</h1>
+      <p class="subtitle">Convert your PDF into an interactive HTML5 flipbook in clicks.</p>
+
+      <div class="drop-zone" id="dropZone">
+        <div class="upload-content">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <div class="upload-text">Drag and drop your PDF here</div>
+          <div class="upload-divider">or</div>
+          <label class="btn-upload" for="pdfFile">Choose File</label>
+          <input type="file" id="pdfFile" accept="application/pdf" hidden />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LOADING OVERLAY ===== -->
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="loader-box">
+      <div class="spinner"></div>
+      <p id="loaderText">Processing document...</p>
+    </div>
+  </div>
+
+  <!-- ===== READER SECTION (Heyzine fullscreen style) ===== -->
+  <section class="reader-section hidden" id="readerSection">
+    <!-- Main Book Canvas Area -->
+    <div class="book-container">
+      <div class="book-wrapper" id="bookWrapper">
+        <!-- The flipbook container Turn.js hooks into -->
+        <div id="flipbook"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Action Bar (Heyzine style) -->
+    <div class="bottom-toolbar">
+      <div class="toolbar-left">
+        <button class="tool-btn" id="btnThumbnails" title="Thumbnails">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+        </button>
+      </div>
+
+      <div class="toolbar-center controls">
+        <button class="tool-btn nav-btn" id="btnFirst" title="First page">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <polyline points="11 17 6 12 11 7"></polyline>
+            <polyline points="18 17 13 12 18 7"></polyline>
+          </svg>
+        </button>
+        <button class="tool-btn nav-btn" id="btnPrev" title="Previous page">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+
+        <div class="page-counter">
+          <span id="currentPage">1</span> / <span id="totalPages">1</span>
+        </div>
+
+        <button class="tool-btn nav-btn" id="btnNext" title="Next page">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+        <button class="tool-btn nav-btn" id="btnLast" title="Last page">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <polyline points="13 17 18 12 13 7"></polyline>
+            <polyline points="6 17 11 12 6 7"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <div class="toolbar-right">
+        <button class="tool-btn" id="btnSound" title="Toggle sound">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+        </button>
+        <!-- Expanded/Fullscreen option -->
+        <button class="tool-btn" id="btnFullscreen" title="Fullscreen">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+            </path>
+          </svg>
+        </button>
+        <button class="tool-btn" id="btnClose" title="Close book">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FLIP SOUND ===== -->
+  <audio id="flipSound" preload="auto">
+    <source src="sound/flip.mp3" type="audio/mpeg" />
+    <source src="sound/flip.wav" type="audio/wav" />
+  </audio>
+
+  <!-- Turn.js -->
+  <script src="js/turn.min.js"></script>
+  <!-- App logic -->
+  <script src="js/script.js"></script>
+</body>
+
+</html>
